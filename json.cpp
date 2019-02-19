@@ -3,6 +3,22 @@
 
 namespace json
 {
+    Value& Node::as_value()
+    {
+        return *dynamic_cast<Value*>(this);
+    }
+
+    Object& Node::as_object()
+    {
+        return *dynamic_cast<Object*>(this);
+    }
+
+    Array& Node::as_array()
+    {
+        return *dynamic_cast<Array*>(this);
+    }
+
+
     int Key::parse(Buffer* buf)
     {
         buf->skip_white();
@@ -68,6 +84,15 @@ namespace json
 
     }
 
+    Node* Object::operator[](const std::string& key)
+    {
+        auto fd = data_.find(key);
+        if (fd != data_.end())
+            return fd->second;
+        else
+            return nullptr;
+    }
+
     int Object::parse(Buffer* buf)
     {
         buf->skip_white();
@@ -116,6 +141,14 @@ namespace json
     void Object::serialize(Buffer* buf)
     {
 
+    }
+
+    Node* Array::operator[](size_t index)
+    {
+        if (index >= 0 && index < data_.size())
+            return data_[index];
+        else
+            return nullptr;
     }
 
     int Array::parse(Buffer* buf)

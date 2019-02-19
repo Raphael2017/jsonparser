@@ -8,8 +8,14 @@
 namespace json
 {
     struct Buffer;
+    struct Value;
+    struct Object;
+    struct Array;
     struct Node
     {
+        Value& as_value();
+        Object& as_object();
+        Array& as_array();
         virtual int parse(Buffer* buf) = 0;
         virtual void serialize(Buffer* buf) = 0;
     };
@@ -35,12 +41,15 @@ namespace json
     struct Object : public Node
     {
         std::map<std::string, Node*> data_;
+        Node* operator[](const std::string& key);
         virtual int parse(Buffer* buf) override;
         virtual void serialize(Buffer* buf) override;
     };
     struct Array : public Node
     {
         std::vector<Node*> data_;
+        size_t size() { return data_.size(); }
+        Node* operator[](size_t index);
         virtual int parse(Buffer* buf) override;
         virtual void serialize(Buffer* buf) override;
     };

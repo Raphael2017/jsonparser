@@ -207,5 +207,6 @@ int main() {
     json::Buffer buffer;
     buffer.src_ = sss;
     obj.parse(&buffer);
+    auto t = obj["Request"]->as_object()["Category"]->as_array()[2]->as_object()["Attribute"]->as_array()[0]->as_object()["DataType"];
     return 0;
 }
