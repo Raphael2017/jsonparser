@@ -1,10 +1,27 @@
 #include <iostream>
-
+#include <time.h>
 #include <string>
 #include <assert.h>
 #include <map>
 #include "json.h"
 #include <string.h>
+#include <fstream>
+
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include <iostream>
+
+using namespace rapidjson;
+
+
+std::string readFileContents(const std::string& file_path)
+{
+    std::ifstream t(file_path);
+    std::string text((std::istreambuf_iterator<char>(t)),
+                     std::istreambuf_iterator<char>());
+    return text;
+}
 
 
 const wchar_t* src = L"Driver=ODBC Driver 13 for SQL Server;Server=tcp:bard-dbc-executer.qapf1.qalab01.nextlabs.com,1433;Uid=sa;PWD=123blue!;Database=test01";
@@ -65,7 +82,7 @@ int main1()
     return 0;
 }
 
-int main() {
+int main2() {
     std::string sss = "{\n"
                       "   \"book\": [\n"
                       "\n"
@@ -216,10 +233,74 @@ int main() {
           "    }\n"
           "}";
 
+    sss = "{\n"
+          "    \"name\": \"BeJson\",\n"
+          "    \"url\": \"http://www.bejson.com\",\n"
+          "    \"page\": 88,\n"
+          "    \"isNonProfit\": true,\n"
+          "    \"address\": {\n"
+          "        \"street\": \"科技园路.\",\n"
+          "        \"city\": \"江苏苏州\",\n"
+          "        \"country\": \"中国\"\n"
+          "    },\n"
+          "    \"links\": [\n"
+          "        {\n"
+          "            \"name\": \"Google\",\n"
+          "            \"url\": \"http://www.google.com\"\n"
+          "        },\n"
+          "        {\n"
+          "            \"name\": \"Baidu\",\n"
+          "            \"url\": \"http://www.baidu.com\"\n"
+          "        },\n"
+          "        {\n"
+          "            \"name\": \"SoSo\",\n"
+          "            \"url\": \"http://www.SoSo.com\"\n"
+          "        }\n"
+          "    ]\n"
+          "}";
+
     json::Object obj;
     json::Buffer buffer;
     buffer.src_ = sss;
     obj.parse(&buffer);
     auto t = obj["Request"]->as_object()["Category"]->as_array()[2]->as_object()["Attribute"]->as_array()[0]->as_object()["Value"];
+    return 0;
+}
+
+int main()
+{
+    auto src = readFileContents("test.json");
+    auto c = src.size();
+    json::Object obj;
+    json::Buffer buffer;
+    buffer.src_ = src;
+    obj.parse(&buffer);
+
+    clock_t start, finish;
+    double duration;
+    {
+        start = clock();
+        size_t NN = 100;
+        for (size_t i = 0; i < NN; ++i)
+        {
+            if (true)
+            {
+                json::Object obj;
+                json::Buffer buffer;
+                buffer.src_ = src;
+                obj.parse(&buffer);
+            }
+            else
+            {
+                Document d;
+                d.Parse(src.c_str());
+            }
+
+        }
+        finish = clock();
+        duration = (double)(finish - start) / 1000;
+        printf( "JSON PARSE: %f ms\n", duration / NN );
+    }
+
     return 0;
 }

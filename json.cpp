@@ -28,7 +28,16 @@ namespace json
         buf->next();
         size_t pos_s = buf->pos();
         while (!buf->is_end() && buf->current() != '"')
-            buf->next();
+        {
+            if (buf->current() == '\\')
+            {
+                buf->next();
+                buf->next();
+            }
+            else
+                buf->next();
+        }
+
         if (buf->current() != '"')
             return -1;
         data_ = buf->range(pos_s, buf->pos());
@@ -54,7 +63,15 @@ namespace json
                 buf->next();
                 size_t pos_s = buf->pos();
                 while (!buf->is_end() && buf->current() != '"')
-                    buf->next();
+                {
+                    if (buf->current() == '\\')
+                    {
+                        buf->next();
+                        buf->next();
+                    }
+                    else
+                        buf->next();
+                }
                 if (buf->current() != '"')
                     return -1;
                 str_ = buf->range(pos_s, buf->pos());
@@ -141,11 +158,15 @@ namespace json
 
     Node* Object::operator[](const std::string& key)
     {
+#ifdef UNIQUE_KEY
         auto fd = data_.find(key);
         if (fd != data_.end())
             return fd->second;
         else
             return nullptr;
+#else
+        return nullptr;
+#endif
     }
 
     int Object::parse(Buffer* buf)
@@ -187,7 +208,11 @@ namespace json
                 }
                     break;
                 default:
+                {
+                    auto c = buf->current();
                     assert(false);
+                }
+
             }
 
         }
@@ -271,7 +296,11 @@ namespace json
         buf->skip_white();
         Node* node = nullptr;
         parse_value(buf, node);
+#ifdef UNIQUE_KEY
         obj->data_[key.data_] = node;
+#else
+        obj->data_.push_back(std::make_pair(key.data_, node));
+#endif
         buf->skip_white();
     }
 

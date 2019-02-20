@@ -4,6 +4,9 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <list>
+
+#define UNIQUE_KEY1
 
 namespace json
 {
@@ -43,7 +46,11 @@ namespace json
     };
     struct Object : public Node
     {
+#ifdef UNIQUE_KEY
         std::map<std::string, Node*> data_;
+#else
+        std::list<std::pair<std::string, Node*>> data_;
+#endif
         Node* operator[](const std::string& key);
         virtual int parse(Buffer* buf) override;
         virtual void serialize(Buffer* buf) override;
@@ -61,14 +68,18 @@ namespace json
     {
         std::string src_;
         size_t pos_{ 0 };
+        size_t line_{0};
+        size_t column_{0};
         bool next() { pos_++; return true; }
         char current() { return src_[pos_]; }
-        char peek();
         bool is_end() { return pos_ >= src_.length(); }
         bool skip_white()
         {
             while (src_[pos_] == ' ' || src_[pos_] == '\t' || src_[pos_] == '\n' || src_[pos_] == '\r')
+            {
                 pos_++;
+            }
+
         }
         size_t pos() { return pos_; }
         std::string range(size_t start, size_t end) { return src_.substr(start, end - start); }
