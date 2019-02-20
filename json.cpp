@@ -73,6 +73,61 @@ namespace json
                 return 0;
             }
                 break;
+            case E_BOOLEAN:
+            {
+                assert(buf->current() == 't' || buf->current() == 'f');
+                if (buf->current() == 't')
+                {
+                    buf->next();
+                    if (buf->is_end() || buf->current() != 'r')
+                        return -1;
+                    buf->next();
+                    if (buf->is_end() || buf->current() != 'u')
+                        return -1;
+                    buf->next();
+                    if (buf->is_end() || buf->current() != 'e')
+                        return -1;
+                    boolean_ = true;
+                    buf->next();
+                }
+                else if (buf->current() == 'f')
+                {
+                    buf->next();
+                    if (buf->is_end() || buf->current() != 'a')
+                        return -1;
+                    buf->next();
+                    if (buf->is_end() || buf->current() != 'l')
+                        return -1;
+                    buf->next();
+                    if (buf->is_end() || buf->current() != 's')
+                        return -1;
+                    buf->next();
+                    if (buf->is_end() || buf->current() != 'e')
+                        return -1;
+                    boolean_ = false;
+                    buf->next();
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+                break;
+            case E_NULL:
+            {
+                assert(buf->current() == 'n');
+                buf->next();
+                if (buf->is_end() || buf->current() != 'u')
+                    return -1;
+                buf->next();
+                if (buf->is_end() || buf->current() != 'l')
+                    return -1;
+                buf->next();
+                if (buf->is_end() || buf->current() != 'l')
+                    return -1;
+                buf->next();
+            }
+                break;
             default:
                 assert(false);  /* unreachable */
         }
@@ -245,6 +300,30 @@ namespace json
                 Object* obj = new Object;
                 obj->parse(buf);
                 node = obj;
+            }
+                break;
+            case 'n':
+            {
+                Value* v = new Value;
+                v->type_ = Value::E_NULL;
+                v->parse(buf);
+                node = v;
+            }
+                break;
+            case 't':
+            {
+                Value* v = new Value;
+                v->type_ = Value::E_BOOLEAN;
+                v->parse(buf);
+                node = v;
+            }
+                break;
+            case 'f':
+            {
+                Value* v = new Value;
+                v->type_ = Value::E_BOOLEAN;
+                v->parse(buf);
+                node = v;
             }
                 break;
             default:

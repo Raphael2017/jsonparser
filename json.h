@@ -30,10 +30,13 @@ namespace json
         enum ValueType
         {
             E_STRING,
-            E_INTERGER
+            E_INTERGER,
+            E_BOOLEAN,
+            E_NULL,
         };
         ValueType type_;
         int i_;
+        bool boolean_;
         std::string str_;
         virtual int parse(Buffer* buf) override;
         virtual void serialize(Buffer* buf) override;

@@ -4,17 +4,24 @@
 #include <assert.h>
 #include <map>
 #include "json.h"
+#include <string.h>
+
 
 const wchar_t* src = L"Driver=ODBC Driver 13 for SQL Server;Server=tcp:bard-dbc-executer.qapf1.qalab01.nextlabs.com,1433;Uid=sa;PWD=123blue!;Database=test01";
+const char* src1 = "Driver=ODBC Driver 13 for SQL Server;Server=tcp:bard-dbc-executer.qapf1.qalab01.nextlabs.com,1433;Uid=sa;PWD=123blue!;Database=test01";
 
-bool parse(const wchar_t* src)
+size_t size(const char* str) { return strlen(str); }
+size_t size(const wchar_t* str) { return wcslen(str); }
+
+template <typename T>
+bool parse(const T* src)
 {
     std::map<std::string, std::string> data{};
     int i = 0;
     std::string key = "";
     std::string value = "";
     int tks = 0;
-    while (i < wcslen(src))
+    while (i < size(src))
     {
         if (src[i] == ';' || 0 == i)
         {
@@ -22,10 +29,10 @@ bool parse(const wchar_t* src)
             if (src[i] == ';')
             {
                 ++i;
-                if (i >= wcslen(src)) break;
+                if (i >= size(src)) break;
             }
             int pos1 = i;
-            while (i < wcslen(src) && (src[i] != '='))
+            while (i < size(src) && (src[i] != '='))
                 ++i;
             key = std::string(src + pos1, src + i);
             tks++;
@@ -34,9 +41,9 @@ bool parse(const wchar_t* src)
         {
             // eat a value
             ++i;
-            if (i >= wcslen(src)) break;
+            if (i >= size(src)) break;
             int pos1 = i;
-            while (i < wcslen(src) && src[i] != ';')
+            while (i < size(src) && src[i] != ';')
                 ++i;
             value = std::string(src + pos1, src + i);
             if (tks != 1)
@@ -51,6 +58,12 @@ bool parse(const wchar_t* src)
     return 0 == tks;
 }
 
+int main1()
+{
+    parse(src1);
+    parse(src);
+    return 0;
+}
 
 int main() {
     std::string sss = "{\n"
@@ -199,7 +212,7 @@ int main() {
           "                \"CategoryId\": \"urn:nextlabs:names:evalsvc:1.0:attribute-category:application\"\n"
           "            }\n"
           "        ],\n"
-          "        \"ReturnPolicyIdList\": \"true\"\n"
+          "        \"ReturnPolicyIdList\": true\n"
           "    }\n"
           "}";
 
@@ -207,6 +220,6 @@ int main() {
     json::Buffer buffer;
     buffer.src_ = sss;
     obj.parse(&buffer);
-    auto t = obj["Request"]->as_object()["Category"]->as_array()[2]->as_object()["Attribute"]->as_array()[0]->as_object()["DataType"];
+    auto t = obj["Request"]->as_object()["Category"]->as_array()[2]->as_object()["Attribute"]->as_array()[0]->as_object()["Value"];
     return 0;
 }
