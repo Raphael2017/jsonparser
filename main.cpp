@@ -12,6 +12,8 @@
 #include "rapidjson/stringbuffer.h"
 #include <iostream>
 
+#include "cookie.h"
+
 using namespace rapidjson;
 
 
@@ -267,7 +269,7 @@ int main2() {
     return 0;
 }
 
-int main()
+int main3()
 {
     auto src = readFileContents("test.json");
     auto c = src.size();
@@ -276,6 +278,16 @@ int main()
     buffer.src_ = src;
     obj.parse(&buffer);
 
+    {
+        json::Buffer w_buffer;
+        json::Object obj1;
+        obj.serialize(&w_buffer);
+        printf("%s\n", w_buffer.src_.c_str());
+        //obj1.parse(&w_buffer);
+
+        int a = 1;
+    }
+
     clock_t start, finish;
     double duration;
     {
@@ -283,17 +295,23 @@ int main()
         size_t NN = 100;
         for (size_t i = 0; i < NN; ++i)
         {
-            if (true)
+            if (false)
             {
                 json::Object obj;
                 json::Buffer buffer;
                 buffer.src_ = src;
                 obj.parse(&buffer);
+                buffer.src_ = "";
+                //obj.serialize(&buffer);
             }
             else
             {
                 Document d;
                 d.Parse(src.c_str());
+                StringBuffer buffer;
+                Writer<StringBuffer> writer(buffer);
+                d.Accept(writer);
+                std::cout << buffer.GetString() << std::endl;
             }
 
         }
@@ -302,5 +320,15 @@ int main()
         printf( "JSON PARSE: %f ms\n", duration / NN );
     }
 
+    return 0;
+}
+
+int main()
+{
+    std::string src = "LSID=DQAAEaem_vYg; Path=/accounts; Expires=Wed, 13 Jan 2021 22:23:01 GMT; Secure; HttpOnly";
+    cookie::Buffer buf;
+    cookie::Cookie ck;
+    buf.src_ = src;
+    ck.parse(&buf);
     return 0;
 }

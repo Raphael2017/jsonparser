@@ -1,66 +1,29 @@
-#ifndef JSON_H
-#define JSON_H
+#ifndef COOKIE_H
+#define COOKIE_H
 
-#include <string>
 #include <map>
-#include <vector>
+#include <string>
 #include <list>
-
-#define UNIQUE_KEY1
-
-namespace json
+namespace cookie
 {
     struct Buffer;
-    struct Value;
-    struct Object;
-    struct Array;
     struct Node
     {
-        Value& as_value();
-        Object& as_object();
-        Array& as_array();
         virtual int parse(Buffer* buf) = 0;
         virtual void serialize(Buffer* buf) = 0;
     };
-    struct Key : public Node
+    struct AvPair;
+    struct Cookie : public Node
     {
-        std::string data_;
-        virtual int parse(Buffer* buf) override;
-        virtual void serialize(Buffer* buf) override;
-    };
-    struct Value : public Node
-    {
-        enum ValueType
-        {
-            E_STRING,
-            E_INTERGER,
-            E_BOOLEAN,
-            E_NULL,
-        };
-        ValueType type_;
-        long i_;
-        bool boolean_;
-        std::string str_;
-        virtual int parse(Buffer* buf) override;
-        virtual void serialize(Buffer* buf) override;
-    };
-    struct Object : public Node
-    {
-#ifdef UNIQUE_KEY
-        std::map<std::string, Node*> data_;
-#else
-        std::list<std::pair<std::string, Node*>> data_;
-#endif
-        Node* operator[](const std::string& key);
+        std::list<AvPair*> data_;
         virtual int parse(Buffer* buf) override;
         virtual void serialize(Buffer* buf) override;
     };
 
-    struct Array : public Node
+    struct AvPair : public Node
     {
-        std::vector<Node*> data_;
-        size_t size() { return data_.size(); }
-        Node* operator[](size_t index);
+        std::pair<std::string, std::string> data_;
+        bool no_value{false};
         virtual int parse(Buffer* buf) override;
         virtual void serialize(Buffer* buf) override;
     };
@@ -75,7 +38,7 @@ namespace json
         inline bool is_end() { return pos_ >= src_.length(); }
         inline bool skip_white()
         {
-            while (src_[pos_] == ' ' || src_[pos_] == '\t' || src_[pos_] == '\n' || src_[pos_] == '\r')
+            while (src_[pos_] == '\t' || src_[pos_] == '\n' || src_[pos_] == '\r')
             {
                 if ('\n' == src_[pos_])
                 {
@@ -93,16 +56,21 @@ namespace json
         inline size_t pos() { return pos_; }
         inline std::string range(size_t start, size_t end) { return src_.substr(start, end - start); }
         inline bool cur_is_digit() { return current() >= '0' && current() <= '9'; }
-
+        inline bool cur_is_token()
+        {
+            char c = src_[pos_];
+            return (c >= '0' && c <= '9') ||
+                    (c >= 'a' && c <= 'z') ||
+                    (c >= 'A' && c <= 'Z') ||
+                    (c == '-' || c == ' ' || c == '/' || c == '_' || c == ':' || c == ',');
+        }
         // for write
         inline void write(const std::string& s) { src_+= s; }
 
     private:
         size_t pos_{ 0 };
     };
-
-    int parse_member(Buffer* buf, Object* obj);
-    int parse_value(Buffer* buf, Node*& node);
 }
+
 
 #endif

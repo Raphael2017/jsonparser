@@ -3,4 +3,4 @@ project(sparser)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(sparser main.cpp json.cpp)
+add_executable(sparser main.cpp json.cpp cookie.cpp)

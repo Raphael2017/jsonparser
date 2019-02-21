@@ -86,7 +86,7 @@ namespace json
                 while (!buf->is_end() && buf->cur_is_digit())
                     buf->next();
                 std::string N = buf->range(pos_s, buf->pos());
-                i_ = atoi(N.c_str());
+                i_ = atol(N.c_str());
                 return 0;
             }
                 break;
@@ -153,7 +153,36 @@ namespace json
 
     void Value::serialize(Buffer* buf)
     {
-
+        switch (type_)
+        {
+            case E_STRING:
+            {
+                buf->write("\"");
+                buf->write(str_);
+                buf->write("\"");
+            }
+                break;
+            case E_INTERGER:
+            {
+                buf->write(std::to_string(i_));
+            }
+                break;
+            case E_BOOLEAN:
+            {
+                if (boolean_)
+                    buf->write("true");
+                else
+                    buf->write("false");
+            }
+                break;
+            case E_NULL:
+            {
+                buf->write("null");
+            }
+                break;
+            default:
+                assert(false);  /* unreachable */
+        }
     }
 
     Node* Object::operator[](const std::string& key)
@@ -220,7 +249,23 @@ namespace json
 
     void Object::serialize(Buffer* buf)
     {
-
+        buf->write("{");
+        auto it = data_.begin();
+        if (it != data_.end())
+        {
+            buf->write("\"");
+            buf->write(it->first);
+            buf->write("\":");
+            it->second->serialize(buf);
+        }
+        for (; it != data_.end(); ++it)
+        {
+            buf->write(",\"");
+            buf->write(it->first);
+            buf->write("\":");
+            it->second->serialize(buf);
+        }
+        buf->write("}");
     }
 
     Node* Array::operator[](size_t index)
@@ -280,7 +325,18 @@ namespace json
 
     void Array::serialize(Buffer* buf)
     {
-
+        buf->write("[");
+        auto it = data_.begin();
+        if (it != data_.end())
+        {
+            (*it)->serialize(buf);
+        }
+        for (; it != data_.end(); ++it)
+        {
+            buf->write(",");
+            (*it)->serialize(buf);
+        }
+        buf->write("]");
     }
 
     int parse_member(Buffer* buf, Object* obj)
