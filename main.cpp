@@ -13,6 +13,8 @@
 #include <iostream>
 
 #include "cookie.h"
+#include <math.h>
+#include <stack>
 
 #define LEFT(N) (2*(N)+1)
 #define RIGHT(N) (2*(N)+2)
@@ -383,9 +385,270 @@ void heap_sort(int* src, size_t length)
     }
 }
 
-int main()
+int main32()
 {
     int src[]{12,2,5,5,13,8,7,6,11};
     heap_sort(src, 9);
+    heap_sort(src, 9);
+
+    double f = 0.625;
+    double ff = f;
+    std::vector<int> ss;
+    int CNT = 50;
+    int i = 0;
+    while (i < CNT)
+    {
+        f = f * 2;
+        if (f >= 1)
+        {
+            ss.push_back(1);
+            f = f - 1;
+        }
+        else
+            ss.push_back(0);
+        ++i;
+    }
+
+    double f1 = 0.0;
+    for (size_t i = 0; i < ss.size(); ++i)
+    {
+        if (ss[i] > 0)
+            f1 += 1.0 / (pow(2.0, i+1));
+    }
+
+    return 0;
+}
+
+struct Node
+{
+    bool is_number_;
+    int data_;
+};
+float eval(const std::vector<Node*>& exp)
+{
+    assert(exp.size() == 7);
+    std::stack<float> stack;
+    for (size_t i = 0; i < exp.size(); ++i)
+    {
+        if (exp[i]->is_number_)
+            stack.push(exp[i]->data_);
+        else
+        {
+            auto n2 = stack.top();stack.pop();
+            auto n1 = stack.top();stack.pop();
+            switch (exp[i]->data_)
+            {
+                case 1:
+                {
+                    stack.push(n1+n2);
+                }
+                    break;
+                case 2:
+                {
+                    stack.push(n1-n2);
+                }
+                    break;
+                case 3:
+                {
+                    stack.push(n1*n2);
+                }
+                    break;
+                case 4:
+                {
+                    stack.push(n1/n2);
+                }
+                    break;
+                default:
+                    assert(false);  /* unreachable */
+            }
+        }
+    }
+    assert(stack.size() == 1);
+    return  stack.top();
+}
+
+void pp(const std::vector<Node*>& exp)
+{
+    for (auto it : exp)
+    {
+        if (it->is_number_)
+            std::cout << it->data_;
+        else
+        {
+            switch (it->data_)
+            {
+                case 1:
+                {
+                    std::cout << "+";
+                }
+                    break;
+                case 2:
+                {
+                    std::cout << "-";
+                }
+                    break;
+                case 3:
+                {
+                    std::cout << "*";
+                }
+                    break;
+                case 4:
+                {
+                    std::cout << "/";
+                }
+                    break;
+                default:
+                    assert(false);  /* unreachable */
+            }
+        }
+    }
+    std::cout << std::endl;
+}
+
+int game(int* src, size_t len = 4)
+{
+    /* +-/* */
+    std::vector<std::vector<int>> ss{
+            {4,3,2,1},
+            {4,3,1,2},
+            {4,2,3,1},
+            {4,2,1,3},
+            {4,1,2,3},
+            {4,1,3,2},
+
+            {3,4,2,1},
+            {2,4,1,2},
+            {2,4,3,1},
+            {2,4,1,3},
+            {1,4,2,3},
+            {1,4,3,2},
+
+            {2,3,4,1},
+            {1,3,4,2},
+            {3,2,4,1},
+            {1,2,4,3},
+            {2,1,4,3},
+            {3,1,4,2},
+
+            {1,3,2,4},
+            {2,3,1,4},
+            {1,2,3,4},
+            {3,2,1,4},
+            {3,1,2,4},
+            {2,1,3,4}
+    };
+    std::vector<std::vector<int>> oo{};
+    for (int i = 1; i <= 4; ++i)
+    {
+        for (int j = 1; j <= 4; ++j)
+        {
+            for (int k = 1; k <= 4; ++k)
+            {
+                oo.push_back({i,j,k});
+            }
+        }
+    }
+
+    int ret = 0;
+    for (auto it1 : ss)
+    {
+        for (auto it2 : oo)
+        {
+            for (int i = 0; i < 5; ++i)
+            {
+                std::vector<Node*> exp;
+                switch (i)
+                {
+                    case 0:
+                    {
+                        exp = {new Node{true, src[it1[0] - 1]},
+                               new Node{true, src[it1[1] - 1]},
+                               new Node{false, it2[0]},
+                               new Node{true, src[it1[2] - 1]},
+                               new Node{false, it2[1]},
+                               new Node{true, src[it1[3] - 1]},
+                               new Node{false, it2[2]}
+                               };
+                    }
+                        break;
+                    case 1:
+                    {
+                        exp = {new Node{true, src[it1[0] - 1]},
+                               new Node{true, src[it1[1] - 1]},
+                               new Node{false, it2[0]},
+                               new Node{true, src[it1[2] - 1]},
+                               new Node{true, src[it1[3] - 1]},
+                               new Node{false, it2[1]},
+                               new Node{false, it2[2]}
+                              };
+                    }
+                        break;
+                    case 2:
+                    {
+                        exp = {new Node{true, src[it1[0] - 1]},
+                               new Node{true, src[it1[1] - 1]},
+                               new Node{true, src[it1[2] - 1]},
+                               new Node{false, it2[0]},
+                               new Node{true, src[it1[3] - 1]},
+                               new Node{false, it2[1]},
+                               new Node{false, it2[2]}
+                              };
+                    }
+                        break;
+                    case 3:
+                    {
+                        exp = {new Node{true, src[it1[0] - 1]},
+                               new Node{true, src[it1[1] - 1]},
+                               new Node{true, src[it1[2] - 1]},
+                               new Node{false, it2[0]},
+                               new Node{false, it2[1]},
+                               new Node{true, src[it1[3] - 1]},
+                               new Node{false, it2[2]}
+                        };
+                    }
+                        break;
+                    case 4:
+                    {
+                        exp = {new Node{true, src[it1[0] - 1]},
+                               new Node{true, src[it1[1] - 1]},
+                               new Node{true, src[it1[2] - 1]},
+                               new Node{true, src[it1[3] - 1]},
+                               new Node{false, it2[0]},
+                               new Node{false, it2[1]},
+                               new Node{false, it2[2]}
+                        };
+                    }
+                        break;
+                    default:
+                        assert(false);
+                }
+                if (eval(exp) == 24)
+                {
+                    pp(exp);
+                    ret++;
+                }
+            }
+        }
+    }
+    return ret;
+}
+
+int main()
+{
+    clock_t start = clock(), finish;
+    int src[]{12,12,13,13};
+    int ret = game(src);
+    eval(std::vector<Node*>{new Node{true, 2},
+                            new Node{true, 1},
+                            new Node{false, 4},
+                            new Node{true, 3},
+                            new Node{false, 4},
+                            new Node{true, 4},
+                            new Node{false, 3}
+    });
+    std::cout << "total: " << ret << std::endl;
+    finish = clock();
+    auto duration = (double)(finish - start) / 1000;
+    printf( "haha: %f ms\n", duration );
     return 0;
 }
