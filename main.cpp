@@ -14,6 +14,9 @@
 
 #include "cookie.h"
 
+#define LEFT(N) (2*(N)+1)
+#define RIGHT(N) (2*(N)+2)
+
 using namespace rapidjson;
 
 
@@ -323,12 +326,66 @@ int main3()
     return 0;
 }
 
-int main()
+int main4()
 {
     std::string src = "LSID=DQAAEaem_vYg; Path=/accounts; Expires=Wed, 13 Jan 2021 22:23:01 GMT; Secure; HttpOnly";
     cookie::Buffer buf;
     cookie::Cookie ck;
     buf.src_ = src;
     ck.parse(&buf);
+    return 0;
+}
+
+void heap_adjust(int* src, size_t length, size_t root);
+
+void heap_build(int* src, size_t length)
+{
+    for (int i = length / 2; i >= 0; --i)
+    {
+        heap_adjust(src, length, i);
+    }
+}
+
+void heap_adjust(int* src, size_t length, size_t root)
+{
+    size_t cur = root;
+    while (1)
+    {
+        size_t l = LEFT(cur);
+        size_t r = RIGHT(cur);
+        size_t largest = cur;
+        if (l < length && src[l] > src[cur])
+            largest = l;
+        else
+            largest = cur;
+        if (r < length && src[r] > src[largest])
+            largest = r;
+        if (cur == largest)
+            break;
+        int tmp = src[cur];
+        src[cur] = src[largest];
+        src[largest] = tmp;
+        cur = largest;
+    }
+}
+
+void heap_sort(int* src, size_t length)
+{
+    heap_build(src, length);
+    size_t heap_size = length;
+    while (heap_size > 1)
+    {
+        heap_adjust(src, heap_size, 0);
+        int tmp = src[0];
+        src[0] = src[heap_size - 1];
+        src[heap_size - 1] = tmp;
+        heap_size--;
+    }
+}
+
+int main()
+{
+    int src[]{12,2,5,5,13,8,7,6,11};
+    heap_sort(src, 9);
     return 0;
 }
